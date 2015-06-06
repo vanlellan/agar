@@ -60,8 +60,6 @@ var updates = new Parser()
       return updates;
     }
   })
-  // In the original code they skip a uint16le
-  //.skip(2)
   .uint32le('length')
   .array('destroyed', {
     type: 'uint32le',
@@ -125,5 +123,6 @@ var message = new Parser()
 module.exports = message;
 module.exports.TYPES = {
   UPDATES: 16,
-  USER_ID: 32
+  USER_ID: 32,
+  BOARD_SIZE: 64
 };

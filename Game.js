@@ -31,9 +31,6 @@ function Game(client) {
   this.backend.on('open', this.onBackendOpen);
   this.backend.on('message', this.onBackendMessage);
   this.backend.on('close', this.onBackendClose);
-
-  this.drawLoop();
-
 }
 module.exports = Game;
 
@@ -85,15 +82,15 @@ Game.prototype.onBackendMessage = function onBackendMessage(data) {
     this.client.send(data);
   }
 
-  //console.log('start:\n');
-  //console.log(data.toString('hex'));
-  //console.log('\n');
   var message = parser.parse(data);
   //console.log(JSON.stringify(message, null, 2));
   if (message.type === parser.TYPES.USER_ID) {
     this.currentUserId = message.data.id
   } else if (message.type === parser.TYPES.UPDATES) {
     this.processUpdates(message.data);
+  } else if (message.type === parser.TYPES.BOARD_SIZE) {
+    this.maxX = message.data.maxX;
+    this.maxY = message.data.maxY;
   }
 };
 
@@ -124,38 +121,12 @@ Game.prototype.processUpdates = function processUpdates(updates) {
   });
 
   _.each(updates.positions, function(position) {
-    newPlayers[position.id] = position;
+    self.players[position.id] = position;
   });
 
-  _.each(updates.pings, function(id) {
+  _.each(updates.destroyed, function(id) {
     if (self.players[id]) {
-      newPlayers[id] = self.players[id];
+      delete self.players[id];
     }
   });
-
-  this.players = newPlayers;
 };
-
-Game.prototype.drawLoop = function drawLoop() {
-  this.draw();
-  setTimeout(this.drawLoop.bind(this), 500);
-};
-
-Game.prototype.draw = function draw() {
-  //var lines = process.stdout.getWindowSize()[1];
-  //for(var i = 0; i < lines; i++) {
-    //console.log('\r\n');
-  //}
-
-  var gnuplot = require('child_process').spawn('gnuplot');
-  gnuplot.stdin.write('set term dumb\n');
-  gnuplot.stdin.write("plot '-'\n");
-  _.each(this.players, function(player) {
-    gnuplot.stdin.write(player.data.nX + ' ' + player.data.nY + '\n');
-  });
-  gnuplot.stdin.write('e\n');
-
-  gnuplot.stdout.on('data', function(chunk) {
-    console.log(chunk.toString('utf8'));
-  });
-}; 
