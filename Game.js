@@ -9,7 +9,7 @@ var WebSocket = require('ws');
 //var Message = require('./Message');
 var parser = require('./parser');
 
-var AGAR_SERVER = 'ws://45.79.73.78:443/';
+var AGAR_SERVER = 'ws://45.79.87.136:443/';
 
 /**
  * Game
@@ -85,7 +85,11 @@ Game.prototype.onBackendMessage = function onBackendMessage(data) {
     this.client.send(data);
   }
 
+  //console.log('start:\n');
+  //console.log(data.toString('hex'));
+  //console.log('\n');
   var message = parser.parse(data);
+  //console.log(JSON.stringify(message, null, 2));
   if (message.type === parser.TYPES.USER_ID) {
     this.currentUserId = message.data.id
   } else if (message.type === parser.TYPES.UPDATES) {

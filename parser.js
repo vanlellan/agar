@@ -37,9 +37,9 @@ var positionEntry = new Parser()
     tag: 'id',
     choices: {0: noop},
     defaultChoice: new Parser()
-      .floatle('nX')
-      .floatle('nY')
-      .floatle('nSize')
+      .int16le('x')
+      .int16le('y')
+      .int16le('size')
       .nest('color', {type: color})
       .uint8('flags')
       .nest('name', {type: string})
@@ -61,9 +61,9 @@ var updates = new Parser()
     }
   })
   // In the original code they skip a uint16le
-  .skip(2)
+  //.skip(2)
   .uint32le('length')
-  .array('pings', {
+  .array('destroyed', {
     type: 'uint32le',
     length: 'length'
   });
