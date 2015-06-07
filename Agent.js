@@ -81,5 +81,30 @@ Agent.prototype.step = function step() {
     return;
   }
 
-  this.controller.move(user.x + 2000, user.y + 2000);
+  var nearestEdible = findNearestEdible(user, this.state.getEntities());
+  if (nearestEdible) {
+    this.controller.move(nearestEdible.x, nearestEdible.y);
+  }
 };
+
+function findNearestEdible(user, entities) {
+  var nearestEdible = null;
+  var nearestEdibleDistance = Number.POSITIVE_INFINITY;
+  _.each(entities, function(entity) {
+    // Skip inedibles
+    if (entity.id === user.id || entity.size >= user.size) {
+      return;
+    }
+
+    var xDistance = user.x - entity.x;
+    var yDistance = user.y - entity.y;
+    var distance = Math.sqrt((xDistance * xDistance) + (yDistance * yDistance));
+
+    if (distance < nearestEdibleDistance) {
+      nearestEdible = entity;
+      nearestEdibleDistance = distance;
+    }
+  });
+
+  return nearestEdible;
+}
