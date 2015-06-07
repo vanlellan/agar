@@ -83,7 +83,7 @@ Agent.prototype.step = function step() {
 
   // Run away from entities that are larger and are within a certain distance.
   var nearestMonster = this.findNearestEntity(function(user, entity) {
-    return entity.id !== user.id && entity.size > user.size;
+    return entity.id !== user.id && entity.size > user.size && !entity.isVirus;
   });
 
   if (nearestMonster) {
@@ -99,7 +99,7 @@ Agent.prototype.step = function step() {
   }
 
   var nearestEdible = this.findNearestEntity(function(user, entity) {
-    return entity.id !== user.id && entity.size < user.size;
+    return entity.id !== user.id && entity.size < user.size && !entity.isVirus;
   });
 
   if (nearestEdible) {
