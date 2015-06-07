@@ -45,9 +45,8 @@ var _ = require('lodash');
 var WebSocket = require('ws');
 var events = require('events');
 var parser = require('./parser');
+var request = require('request');
 var util = require('util');
-
-var AGAR_SERVER = 'ws://45.79.76.136:443/';
 
 /**
  * AgarBackend
@@ -99,10 +98,20 @@ AgarBackend.prototype.connect = function connect() {
     throw new Error('Set client before connecting backend');
   }
 
-  this.socket = new WebSocket(AGAR_SERVER, {origin: 'http://agar.io'});
-  this.socket.on('open', this.onSocketOpen);
-  this.socket.on('message', this.onSocketMessage);
-  this.socket.on('close', this.onSocketClose);
+  var self = this;
+  this.getServerIP(function(error, ip) {
+    if (error) {
+      // TODO(ibash) should probably make connect take a callback so that
+      // upstream can handle the error. But for right now... ¯\_(ツ)_/¯
+      throw error;
+    }
+
+    var url = 'ws://' + ip + '/';
+    self.socket = new WebSocket(url, {origin: 'http://agar.io'});
+    self.socket.on('open', self.onSocketOpen);
+    self.socket.on('message', self.onSocketMessage);
+    self.socket.on('close', self.onSocketClose);
+  });
 };
 
 /**
@@ -114,11 +123,33 @@ AgarBackend.prototype.connect = function connect() {
  * @return {undefined}
  */
 AgarBackend.prototype.send = function send(buffer) {
-  if (this.socket.readyState !== WebSocket.OPEN) {
+  if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
     // TODO(ibash) should I throw an error?
     return;
   }
   this.socket.send(buffer);
+};
+
+/**
+ * getServerIP
+ *
+ * Queries agar.io backend to get the ip of a websocket server.
+ *
+ * @param {function(error, ip)} callback
+ */
+AgarBackend.prototype.getServerIP = function getServerIP(callback) {
+  request.post({
+    url: 'https://m.agar.io',
+    // TODO(ibash) this always connects to the US-Fremont region -- can change
+    // later
+    form: {'US-Fremont': ''}
+  }, function(error, resp, body) {
+    if (error) {
+      return callback(error);
+    }
+
+    callback(null, body);
+  });
 };
 
 /**
