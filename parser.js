@@ -67,7 +67,13 @@ function buildParser() {
             return '#' + string;
           }
         })
-        .uint8('flags')
+        .uint8('flags', {
+          formatter: function(flags) {
+            var isVirus = !!(flags & 1);
+            var isAgitated = !!(flags & 16);
+            return {isVirus: isVirus, isAgitated: isAgitated};
+          }
+        })
         .nest('name', {type: string}),
     });
 
@@ -86,12 +92,13 @@ function buildParser() {
 
         // Flatten out the entities
         for (var i = 0; i < entities.length; i++) {
-          entities[i].x = entities[i].data.x;
-          entities[i].y = entities[i].data.y;
-          entities[i].size = entities[i].data.size;
-          entities[i].color = entities[i].data.color;
-          entities[i].flags = entities[i].data.flags;
-          entities[i].name = entities[i].data.name.string;
+          entities[i].x          = entities[i].data.x;
+          entities[i].y          = entities[i].data.y;
+          entities[i].size       = entities[i].data.size;
+          entities[i].color      = entities[i].data.color;
+          entities[i].isVirus    = entities[i].data.flags.isVirus;
+          entities[i].isAgitated = entities[i].data.flags.isAgitated;
+          entities[i].name       = entities[i].data.name.string;
           delete entities[i].data;
         }
 
