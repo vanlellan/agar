@@ -81,30 +81,77 @@ Agent.prototype.step = function step() {
     return;
   }
 
-  var nearestEdible = findNearestEdible(user, this.state.getEntities());
+  // Run away from entities that are larger and are within a certain distance.
+  var nearestMonster = this.findNearestEntity(function(user, entity) {
+    return entity.id !== user.id && entity.size > user.size;
+  });
+
+  if (nearestMonster) {
+    var monsterDistance = distance(user, nearestMonster);
+    // Keep at least 4 radii away from bigger entities
+    if (monsterDistance < (4 * user.size)) {
+      // Move away
+      var xDelta = user.x - nearestMonster.x;
+      var yDelta = user.y - nearestMonster.y
+      this.controller.move(user.x + xDelta, user.y + yDelta);
+      return;
+    }
+  }
+
+  var nearestEdible = this.findNearestEntity(function(user, entity) {
+    return entity.id !== user.id && entity.size < user.size;
+  });
+
   if (nearestEdible) {
     this.controller.move(nearestEdible.x, nearestEdible.y);
   }
 };
 
-function findNearestEdible(user, entities) {
-  var nearestEdible = null;
-  var nearestEdibleDistance = Number.POSITIVE_INFINITY;
+/**
+ * findNearestEntity
+ *
+ * Find the nearest entity that satisfies the predicate.
+ *
+ * @param {function(user, entity)} predicate Function that returns true/false.
+ *   Filters entities to those that pass the predicate.
+ * @return {undefined}
+ */
+Agent.prototype.findNearestEntity = function findNearestEntity(predicate) {
+  var user = this.state.getUserEntity();
+  var entities = this.state.getEntities();
+  var nearestEntity = null;
+  var nearestEntityDistance = Number.POSITIVE_INFINITY;
+
   _.each(entities, function(entity) {
-    // Skip inedibles
-    if (entity.id === user.id || entity.size >= user.size) {
+    if (!predicate(user, entity)) {
       return;
     }
 
-    var xDistance = user.x - entity.x;
-    var yDistance = user.y - entity.y;
-    var distance = Math.sqrt((xDistance * xDistance) + (yDistance * yDistance));
+    var entityDistance = distance(user, entity);
 
-    if (distance < nearestEdibleDistance) {
-      nearestEdible = entity;
-      nearestEdibleDistance = distance;
+    if (entityDistance < nearestEntityDistance) {
+      nearestEntity = entity;
+      nearestEntityDistance = entityDistance;
     }
   });
 
-  return nearestEdible;
+  return nearestEntity;
+}
+
+/**
+ * distance
+ *
+ * Calculate distance of entities from each other.
+ *
+ * @param entity1
+ * @param entity2
+ * @return {number}
+ */
+function distance(entity1, entity2) {
+  var xDistance = entity1.x - entity2.x;
+  var yDistance = entity1.y - entity2.y;
+  var centerDistance = Math.sqrt((xDistance * xDistance) + (yDistance * yDistance));
+
+  // The size is the radius, so remove it to get edge to edge distance
+  return centerDistance - entity1.size - entity2.size;
 }
