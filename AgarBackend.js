@@ -1,0 +1,169 @@
+/**
+ * AgarBackend
+ *
+ * Connects to a backend agar server and parses messages coming back.
+ *
+ * Useage:
+ *
+ * var backend = new AgarBackend();
+ * backend.setClient(client);
+ * backend.connect();
+ *
+ * backend.on('board size', ...);
+ * backend.on('updates', ...);
+ *
+ * Events:
+ *
+ * 'userId' (id)
+ *   The user id of the currently playing user.
+ *
+ * 'updates' (consumptions, entities, destructions)
+ *   The most complicated / interesting event.
+ *
+ *   `consumptions` is an {Array(Object)} where each object has a `consumerId`
+ *   and `consumedId`. Note that I am not confident of the "consumer"
+ *   interpretation.
+ *
+ *   `entities` is an {Array(Object)} where each object has:
+ *     id {int} Entity identifier.
+ *     x {int} Current X position of the entity.
+ *     y {int} Current Y position of the entity.
+ *     size {int} Radius of the entity.
+ *     color {string} Color of entity as a hex string (including '#').
+ *     name {string} Name of the entity.
+ *     TODO(ibash) document the flags
+ *
+ *   `destructions` is an {Array(int)} where each item is an id of a entity that
+ *   no longer exists.
+ *
+ * 'boardSize' (x, y)
+ *   The size of the game board (in generic units).
+ *
+ * TODO(ibash) document and add leaderboard and screen position
+ */
+var _ = require('lodash');
+var WebSocket = require('ws');
+var events = require('events');
+var parser = require('./parser');
+var util = require('util');
+
+var AGAR_SERVER = 'ws://45.79.87.136:443/';
+
+/**
+ * AgarBackend
+ *
+ * @return {undefined}
+ */
+function AgarBackend(client) {
+  _.bindAll(this);
+  events.EventEmitter.call(this);
+}
+util.inherits(AgarBackend, events.EventEmitter);
+module.exports = AgarBackend;
+
+/**
+ * setClient
+ *
+ * @param {WebSocket} [client] Client websocket connection. Messages from client
+ *   will be sent to backend and messages from backend will be forwarded to
+ *   client.
+ *
+ * @return {undefined}
+ */
+AgarBackend.prototype.setClient = function setClient(client) {
+  if (this.client) {
+    throw new Error('Client already set');
+  }
+
+  this.client = client;
+  this.client.on('message', this.onClientMessage);
+  this.client.on('close', this.onClientClose);
+  this.initialIncomingBuffer = [];
+};
+
+/**
+ * connect
+ *
+ * Connects to agar.io backend server.
+ * TODO Backend server is currently hard coded but can (and should) do a lookup.
+ *
+ * @return {undefined}
+ */
+AgarBackend.prototype.connect = function connect() {
+  if (!this.client) {
+    throw new Error('Set client before connecting backend');
+  }
+
+  this.socket = new WebSocket(AGAR_SERVER, {origin: 'http://agar.io'});
+  this.socket.on('open', this.onSocketOpen);
+  this.socket.on('message', this.onSocketMessage);
+  this.socket.on('close', this.onSocketClose);
+};
+
+/**
+ * onClientMessage
+ *
+ * @param data
+ * @return {undefined}
+ */
+AgarBackend.prototype.onClientMessage = function onClientMessage(data) {
+  if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+    this.socket.send(data);
+  } else if (!this.socket || this.socket.readyState === WebSocket.CONNECTING) {
+    this.initialIncomingBuffer.push(data);
+  }
+};
+
+/**
+ * onClientClose
+ *
+ * @return {undefined}
+ */
+AgarBackend.prototype.onClientClose = function onClientClose() {
+  if (this.socket) {
+    this.socket.close();
+  }
+};
+
+/**
+ * onSocketOpen
+ *
+ * @return {undefined}
+ */
+AgarBackend.prototype.onSocketOpen = function onSocketOpen() {
+  while (this.initialIncomingBuffer.length) {
+    this.socket.send(this.initialIncomingBuffer.pop());
+  }
+};
+
+/**
+ * onSocketMessage
+ *
+ * @param data
+ * @return {undefined}
+ */
+AgarBackend.prototype.onSocketMessage = function onSocketMessage(data) {
+  if (this.client && this.client.readyState === WebSocket.OPEN) {
+    this.client.send(data);
+  }
+
+  var message = parser.parse(data);
+  if (message.type === parser.TYPES.USER_ID) {
+    this.emit('userId', message.data.id);
+  } else if (message.type === parser.TYPES.UPDATES) {
+    this.emit('updates', message.data.consumptions, message.data.entities, message.data.destructions);
+  } else if (message.type === parser.TYPES.BOARD_SIZE) {
+    this.emit('boardSize', message.data.maxX, message.data.maxY);
+  }
+};
+
+/**
+ * onSocketClose
+ *
+ * @return {undefined}
+ */
+AgarBackend.prototype.onSocketClose = function onSocketClose() {
+  if (this.client) {
+    this.client.close();
+  }
+};

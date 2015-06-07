@@ -2,10 +2,16 @@ var _ = require('lodash');
 var Canvas = require('canvas');
 var fs = require('fs');
 
-exports.render = function render(game) {
-  var scale = 10;
-  var maxX = game.maxX / scale;
-  var maxY = game.maxY / scale;
+var SCALE = 10;
+
+exports.render = function render(gameState) {
+  var size = gameState.getBoardSize();
+  if (!size) {
+    return;
+  }
+
+  var maxX = size.x / SCALE;
+  var maxY = size.y / SCALE;
   var canvas = new Canvas(maxX, maxY);
   var ctx = canvas.getContext('2d');
 
@@ -17,12 +23,12 @@ exports.render = function render(game) {
   ctx.fill();
   ctx.restore();
   
-  _.each(game.players, function(player) {
+  _.each(gameState.getEntities(), function(entity) {
     ctx.save();
-    ctx.strokeStyle = 'blue';
-    ctx.fillStyle = 'blue';
+    ctx.strokeStyle = entity.color;
+    ctx.fillStyle = entity.color;
     ctx.beginPath();
-    ctx.arc(player.data.x / scale, player.data.y / scale, player.data.size / scale, 0, 2 * Math.PI, true);
+    ctx.arc(entity.x / SCALE, entity.y / SCALE, entity.size / SCALE, 0, 2 * Math.PI, true);
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
@@ -32,13 +38,15 @@ exports.render = function render(game) {
   return canvas;
 };
 
-exports.loop = function loop(game) {
+exports.loop = function loop(gameState) {
   render();
 
   function render() {
-    var canvas = exports.render(game);
-    fs.writeFile('frame.png', canvas.toBuffer());
+    var canvas = exports.render(gameState);
+    if (canvas) {
+      fs.writeFile('frame.png', canvas.toBuffer());
+    }
 
-    setTimeout(render, 16);
+    setTimeout(render, 100);
   }
 };
