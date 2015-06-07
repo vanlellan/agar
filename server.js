@@ -8,6 +8,7 @@
 var express = require('express');
 var WebSocketServer = require('ws').Server;
 var AgarBackend = require('./AgarBackend');
+var Agent = require('./Agent');
 var Controller = require('./Controller');
 var GameState = require('./GameState');
 var renderer = require('./renderer');
@@ -37,24 +38,8 @@ wss.on('connection', function connection(client) {
   var controller = new Controller();
   controller.setAgarBackend(backend);
 
-  setTimeout(function() {
-    controller.sendInitMessage();
-    controller.play();
-    move();
-  }, 1000);
-
-  function move() {
-    var user = state.getUserEntity();
-    if (!user) {
-      console.log('no user');
-      setTimeout(move, 1000);
-      return;
-    }
-    console.log(user.x, user.y);
-    controller.move(user.x + 2000, user.y + 2000);
-    setTimeout(move, 1000);
-  }
-
+  var agent = new Agent(state, controller);
+  agent.run();
 
   //renderer.loop(state);
 });

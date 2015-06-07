@@ -47,7 +47,7 @@ var events = require('events');
 var parser = require('./parser');
 var util = require('util');
 
-var AGAR_SERVER = 'ws://45.79.87.136:443/';
+var AGAR_SERVER = 'ws://45.79.76.136:443/';
 
 /**
  * AgarBackend
@@ -175,6 +175,10 @@ AgarBackend.prototype.onSocketMessage = function onSocketMessage(data) {
     this.emit('updates', message.data.consumptions, message.data.entities, message.data.destructions);
   } else if (message.type === parser.TYPES.BOARD_SIZE) {
     this.emit('boardSize', message.data.maxX, message.data.maxY);
+  } else if (message.type === parser.TYPES.LEADER_BOARD) {
+  } else {
+    console.log('unknown message');
+    console.log(JSON.stringify(message, null, 2));
   }
 };
 
