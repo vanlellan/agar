@@ -1,5 +1,5 @@
 /**
- * Parser
+ * parser
  *
  * Parser for agar.io messages.
  */

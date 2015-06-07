@@ -64,21 +64,26 @@ module.exports = AgarBackend;
 /**
  * setClient
  *
- * @param {WebSocket} [client] Client websocket connection. Messages from client
+ * @param {WebSocket} client Client websocket connection. Messages from client
  *   will be sent to backend and messages from backend will be forwarded to
  *   client.
+ * @param {bool} shouldPassMessages Defaults to false. Set to true to pass
+ *   messages from client to the agar server. (i.e. control the game from the
+ *   client).
  *
  * @return {undefined}
  */
-AgarBackend.prototype.setClient = function setClient(client) {
+AgarBackend.prototype.setClient = function setClient(client, shouldPassMessages) {
   if (this.client) {
     throw new Error('Client already set');
   }
 
   this.client = client;
-  this.client.on('message', this.onClientMessage);
+  if (shouldPassMessages) {
+    this.initialIncomingBuffer = [];
+    this.client.on('message', this.onClientMessage);
+  }
   this.client.on('close', this.onClientClose);
-  this.initialIncomingBuffer = [];
 };
 
 /**
@@ -98,6 +103,22 @@ AgarBackend.prototype.connect = function connect() {
   this.socket.on('open', this.onSocketOpen);
   this.socket.on('message', this.onSocketMessage);
   this.socket.on('close', this.onSocketClose);
+};
+
+/**
+ * send
+ *
+ * Send a message to the agar.io server.
+ *
+ * @param {Buffer} buffer
+ * @return {undefined}
+ */
+AgarBackend.prototype.send = function send(buffer) {
+  if (this.socket.readyState !== WebSocket.OPEN) {
+    // TODO(ibash) should I throw an error?
+    return;
+  }
+  this.socket.send(buffer);
 };
 
 /**
@@ -131,7 +152,7 @@ AgarBackend.prototype.onClientClose = function onClientClose() {
  * @return {undefined}
  */
 AgarBackend.prototype.onSocketOpen = function onSocketOpen() {
-  while (this.initialIncomingBuffer.length) {
+  while (this.initialIncomingBuffer && this.initialIncomingBuffer.length) {
     this.socket.send(this.initialIncomingBuffer.pop());
   }
 };

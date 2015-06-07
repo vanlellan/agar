@@ -1,8 +1,11 @@
 /**
+ * GameState
+ *
  * Current state of the agar game.
  * Listens to events from an AgarBackend and updates state accordingly.
  *
  * Useage:
+ *
  * var state = new GameState();
  * state.setAgarBackend(backend);
  * state.getUserId();
@@ -58,6 +61,17 @@ GameState.prototype.getBoardSize = function getBoardSize() {
  */
 GameState.prototype.getUserId = function getUserId() {
   return this.userId;
+};
+
+/**
+ * getUserEntity
+ *
+ * @return {Object | undefined}
+ */
+GameState.prototype.getUserEntity = function getUserEntity() {
+  if (this.userId) {
+    return this.entities[this.userId];
+  }
 };
 
 /**
