@@ -146,13 +146,13 @@ function buildParser() {
     .floatle('z');
 
   var messageChoices = {};
-  messageChoices[MESSAGE_TYPES.UPDATES] = updates;
+  messageChoices[MESSAGE_TYPES.UPDATES]         = updates;
   messageChoices[MESSAGE_TYPES.SCREEN_POSITION] = screenPosition;
-  messageChoices[MESSAGE_TYPES.RESET] = noop;
-  messageChoices[MESSAGE_TYPES.USER_ID] = userId;
-  messageChoices[MESSAGE_TYPES.LEADER_BOARD] = leaderBoard;
-  messageChoices[MESSAGE_TYPES.DONT_KNOW_YET] = dontKnowYet;
-  messageChoices[MESSAGE_TYPES.BOARD_SIZE] = boardSize;
+  messageChoices[MESSAGE_TYPES.RESET]           = noop;
+  messageChoices[MESSAGE_TYPES.USER_ID]         = userId;
+  messageChoices[MESSAGE_TYPES.LEADER_BOARD]    = leaderBoard;
+  messageChoices[MESSAGE_TYPES.DONT_KNOW_YET]   = dontKnowYet;
+  messageChoices[MESSAGE_TYPES.BOARD_SIZE]      = boardSize;
 
   // Top level message parser.
   var message = new Parser()
