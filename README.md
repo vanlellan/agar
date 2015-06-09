@@ -1,33 +1,39 @@
 # Agar
 
-# Installation
+## Installation
 
 1. First make sure you have [Node.js](https://nodejs.org/) installed.
 2. Install dependencies
 
+    ```bash
     npm install
+    ```
 
 3. Optional: Note that if you want to take screenshots you'll need to install `cairo` /
    `node-canvas` successfully. If you run into trouble see [these instructions](https://github.com/Automattic/node-canvas/wiki/_pages)
    On OSX with homebrew:
 
+    ```bash
     brew install cairo
     export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
     npm install
+    ```
 
-# Useage
+## Useage
 
 1. Start up the proxy server
 
+    ```bash
     npm start
+    ```
 
 2. Visit `http://localhost:8888`. You should be served a modified version of the agar.io client. The game should start playing automatically (initiated by the Agent).
 
-# Contribute
+## Contribute
 
   Fork and pull-requests are welcome. If you do something awesome with this let us know and we'll link to it!
 
-# Overview
+## Overview
 
 Contains some code to interact with the game agar.io.
 
@@ -54,7 +60,7 @@ Contains some code to interact with the game agar.io.
   - Initializes all of the above when a new client connects
 
 
-# License
+## License
 
 The MIT License (MIT)
 
