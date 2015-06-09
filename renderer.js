@@ -1,6 +1,13 @@
 var _ = require('lodash');
-var Canvas = require('canvas');
 var fs = require('fs');
+
+var Canvas;
+try {
+  Canvas = require('canvas');
+} catch (error) {
+  console.log('Canvas not installed. Cannot export png.');
+  return;
+}
 
 var SCALE = 10;
 
