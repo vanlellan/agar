@@ -16,6 +16,13 @@ var MESSAGE_TYPES = {
   BOARD_SIZE: 64
 };
 
+// Ignored marker is a strange one. In the agar.io client code if the message is
+// prepended with 240 then the client skips to the fifth byte.
+// That is, sometimes the first byte is one of the message types above, and
+// sometimes the first byte is 240 and three more bytes, with the fifth byte
+// being one of the message types above.
+var IGNORED_MARKER = 240;
+
 module.exports = buildParser();
 module.exports.TYPES = MESSAGE_TYPES;;
 
@@ -163,5 +170,13 @@ function buildParser() {
       defaultChoice: noop
     });
 
-  return message;
+  return {
+    parse: function(buffer) {
+      // If 240 is the first number, ignore it skip forward to the fifth byte.
+      if (buffer.length && buffer.readUInt8(0) === IGNORED_MARKER) {
+        buffer = buffer.slice(5);
+      }
+      return message.parse(buffer);
+    }
+  };
 }
