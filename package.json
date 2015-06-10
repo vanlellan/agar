@@ -14,14 +14,15 @@
     "binary-parser": "^1.1.4",
     "express": "^4.12.4",
     "lodash": "^3.9.1",
+    "ml-js": "ibash/ml-js",
     "request": "^2.57.0",
     "ws": "^0.7.2"
   },
-  "devDependencies" :{
+  "devDependencies": {
     "chai": "^3.0.0",
     "mocha": "^2.2.5"
   },
-  "optionalDependencies" :{
+  "optionalDependencies": {
     "canvas": "^1.2.3"
   }
 }
