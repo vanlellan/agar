@@ -9,8 +9,11 @@
  * agent.run();
  */
 var _ = require('lodash');
+var fs = require('fs');
+var path = require('path');
 
 var DEFAULT_STEP_TIMEOUT = 50;
+var LOG_DIR = path.resolve(__dirname, 'logs');
 
 /**
  * Agent
@@ -94,6 +97,7 @@ Agent.prototype.step = function step() {
       var xDelta = user.x - nearestMonster.x;
       var yDelta = user.y - nearestMonster.y
       this.controller.move(user.x + xDelta, user.y + yDelta);
+      this.logActionState(this.state, {x: user.x + xDelta, y: user.y + yDelta});
       return;
     }
   }
@@ -103,6 +107,7 @@ Agent.prototype.step = function step() {
   });
 
   if (nearestEdible) {
+    this.logActionState(this.state, {x: nearestEdible.x, y: nearestEdible.y});
     this.controller.move(nearestEdible.x, nearestEdible.y);
   }
 };
@@ -137,6 +142,32 @@ Agent.prototype.findNearestEntity = function findNearestEntity(predicate) {
 
   return nearestEntity;
 }
+
+/**
+ * logActionState
+ *
+ * TODO this probably belongs in a different module.
+ * This logs the action state pair.
+ *
+ * @param state
+ * @param action
+ * @return {undefined}
+ */
+Agent.prototype.logActionState = function logActionState(state, action) {
+  if (!this.outputStream) {
+    var filename = 'action_state_' + (new Date()).toISOString() + '.log.jsonl';
+    var logPath = path.resolve(LOG_DIR, filename);
+    this.outputStream = fs.createWriteStream(logPath);
+  }
+
+  // prepare a single action/state log
+  var output = {
+    state: state.toJSON(),
+    action: action
+  };
+
+  this.outputStream.write(JSON.stringify(output) + '\n', 'utf8');
+};
 
 /**
  * distance

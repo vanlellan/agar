@@ -85,6 +85,21 @@ GameState.prototype.getEntities = function getEntities() {
 };
 
 /**
+ * toJSON
+ *
+ * Returns a simple object that can be converted to JSON.
+ *
+ * @return {Object}
+ */
+GameState.prototype.toJSON = function toJSON() {
+  return {
+    boardSize: this.boardSize,
+    entities: this.entities,
+    userId: this.userId
+  };
+};
+
+/**
  * onBoardSize
  *
  * @param {number} x
