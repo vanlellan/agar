@@ -11,8 +11,9 @@
 var _ = require('lodash');
 var fs = require('fs');
 var path = require('path');
+var QLearner = require('./QLearner');
 
-var DEFAULT_STEP_TIMEOUT = 50;
+var DEFAULT_STEP_TIMEOUT = 100;
 var LOG_DIR = path.resolve(__dirname, 'logs');
 
 /**
@@ -26,6 +27,7 @@ function Agent(state, controller) {
   _.bindAll(this);
   this.state = state;
   this.controller = controller;
+  this.qLearner = new QLearner();
 }
 module.exports = Agent;
 
@@ -84,32 +86,8 @@ Agent.prototype.step = function step() {
     return;
   }
 
-  // Run away from entities that are larger and are within a certain distance.
-  var nearestMonster = this.findNearestEntity(function(user, entity) {
-    return entity.id !== user.id && entity.size > user.size && !entity.isVirus;
-  });
-
-  if (nearestMonster) {
-    var monsterDistance = distance(user, nearestMonster);
-    // Keep at least 4 radii away from bigger entities
-    if (monsterDistance < (4 * user.size)) {
-      // Move away
-      var xDelta = user.x - nearestMonster.x;
-      var yDelta = user.y - nearestMonster.y
-      this.controller.move(user.x + xDelta, user.y + yDelta);
-      this.logActionState(this.state, {x: user.x + xDelta, y: user.y + yDelta});
-      return;
-    }
-  }
-
-  var nearestEdible = this.findNearestEntity(function(user, entity) {
-    return entity.id !== user.id && entity.size < user.size && !entity.isVirus;
-  });
-
-  if (nearestEdible) {
-    this.logActionState(this.state, {x: nearestEdible.x, y: nearestEdible.y});
-    this.controller.move(nearestEdible.x, nearestEdible.y);
-  }
+  var targetPosition = this.qLearner.step(this.state);
+  this.controller.move(targetPosition.x, targetPosition.y);
 };
 
 /**
