@@ -19,7 +19,7 @@ var ml = require('ml-js');
 function QLearner() {
   this.currentActionIndex = null;
   this.currentState = null;
-  this.numEntitiesInVector = 10;
+  this.numEntitiesInVector = 50;
 
   // Number of directions we let our entity move in.
   this.numDirections = 10;
@@ -298,6 +298,8 @@ QLearner.prototype.calculateReward = function calculateReward(state, nextState) 
     // 10 for staying alive and 100 for growing
     return 10 + 100 * nextUser.size - user.size;
   } else {
-    return 0;
+    // the user died
+    // TODO(ibash) get a better way to detect this
+    return -1000;
   }
 }
