@@ -210,8 +210,12 @@ QLearner.prototype.stateToVector = function stateToVector(state) {
   vector.push(boardSize.x - (user.x + user.size)); // right
 
   var entitiesCount = 0;
-  _.each(state.getEntities(), function(entity) {
+  _.each(entities, function(entity) {
     if (entity.id === user.id) {
+      return;
+    }
+
+    if (entitiesCount >= self.numEntitiesInVector) {
       return;
     }
 
