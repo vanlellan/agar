@@ -13,7 +13,7 @@ var fs = require('fs');
 var path = require('path');
 var QLearner = require('./QLearner');
 
-var DEFAULT_STEP_TIMEOUT = 100;
+var DEFAULT_STEP_TIMEOUT = 200;
 var LOG_DIR = path.resolve(__dirname, 'logs');
 
 /**

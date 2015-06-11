@@ -295,8 +295,8 @@ QLearner.prototype.calculateReward = function calculateReward(state, nextState) 
   var user = state.getUserEntity();
   var nextUser = nextState.getUserEntity();
   if (user.id === nextUser.id) {
-    // 10 for staying alive and 100 for growing
-    return 10 + 100 * nextUser.size - user.size;
+    // 1 for staying alive and 100 for growing
+    return 100 * (nextUser.size - user.size);
   } else {
     // the user died
     // TODO(ibash) get a better way to detect this
