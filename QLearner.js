@@ -233,7 +233,7 @@ QLearner.prototype.stateToVector = function stateToVector(state) {
   });
 
   // Pad out the vector.
-  for (var i = entitiesCount; entitiesCount < this.numEntitiesInVector; i++) {
+  for (var i = entitiesCount; i < this.numEntitiesInVector; i++) {
     var emptyVector = [0, 0, 0, 0, 0];
     vector.push.apply(vector, emptyVector);
   }
