@@ -19,7 +19,7 @@ var ml = require('ml-js');
 function QLearner() {
   this.currentActionIndex = null;
   this.currentState = null;
-  this.numEntitiesInVector = 50;
+  this.numEntitiesInVector = 20;
 
   // Number of directions we let our entity move in.
   this.numDirections = 10;
@@ -201,7 +201,6 @@ QLearner.prototype.stateToVector = function stateToVector(state) {
   var vector = [];
   var user = state.getUserEntity();
   var boardSize = state.getBoardSize();
-  var entities = state.getEntities();
 
   // Distance to top, bottom, left, right from the edge of the entity.
   vector.push(user.y - user.size); // top
@@ -209,13 +208,10 @@ QLearner.prototype.stateToVector = function stateToVector(state) {
   vector.push(user.x - user.size); // left
   vector.push(boardSize.x - (user.x + user.size)); // right
 
+  var entities = this.nClosestSortedEntities(this.numEntitiesInVector, user, state.getEntities());
   var entitiesCount = 0;
   _.each(entities, function(entity) {
     if (entity.id === user.id) {
-      return;
-    }
-
-    if (entitiesCount >= self.numEntitiesInVector) {
       return;
     }
 
@@ -239,6 +235,32 @@ QLearner.prototype.stateToVector = function stateToVector(state) {
   }
 
   return vector;
+};
+
+/**
+ * nClosestSortedEntities
+ *
+ * Gets the n closest entities to source (that are not source). Entities are
+ * returned in sorted order.
+ *
+ * @param {number} n
+ * @param {Object} source
+ * @param {Array(Object)} entities
+ * @return {Array(Object)}
+ */
+QLearner.prototype.nClosestSortedEntities = function nClosestSortedEntities(n, source, entities) {
+
+  var self = this;
+
+  var sorted = _.sortBy(entities, function(entity) {
+    return self.distance(source, entity);
+  });
+
+  if (sorted[0] === source.id) {
+    sorted.shift();
+  }
+
+  return sorted.slice(0, n);
 };
 
 /**
