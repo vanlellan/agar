@@ -256,7 +256,7 @@ QLearner.prototype.nClosestSortedEntities = function nClosestSortedEntities(n, s
     return self.distance(source, entity);
   });
 
-  if (sorted[0] === source.id) {
+  if (sorted[0].id === source.id) {
     sorted.shift();
   }
 
