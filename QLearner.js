@@ -260,20 +260,9 @@ QLearner.prototype.distance = function distance(source, target) {
 QLearner.prototype.angle = function angle(source, target) {
   var xDelta = target.x - source.x;
   var yDelta = target.y - source.y;
-  var angle = Math.atan(yDelta / xDelta); 
-
-  // Now we need to correct for which quadrant the target is in...
-  if (xDelta > 0 && yDelta > 0) {
-    // Quadrant 1, no modification needed
-  } else if (xDelta < 0 && yDelta > 0) {
-    // Quadrant 2
-    angle = Math.PI - angle;
-  } else if (xDelta < 0 && yDelta < 0) {
-    // Quadrant 3
-    angle = Math.PI + angle;
-  } else if (xDelta > 0 && yDelta < 0) {
-    // Quadrant 4
-    angle = (2 * Math.PI) - angle;
+  var angle = Math.atan2(yDelta, xDelta);
+  if (angle < 0) {
+    angle += 2 * Math.PI;
   }
 
   return angle;
