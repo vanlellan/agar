@@ -96,11 +96,21 @@ QLearner.prototype.buildActions = function buildActions(numDirections) {
   var delta = (2 * Math.PI) / numDirections;
   for (var i = 0; i < numDirections; i++) {
     var angle = delta * i;
-    // i + 1 since 0 is taken by no movement
-    actions[i + 1] = {
+    var action = {
       xMultiplier: Math.cos(angle),
       yMultiplier: Math.sin(angle),
     };
+
+    if (Math.abs(action.xMultiplier) < 1.0e-5) {
+      action.xMultiplier = 0;
+    }
+
+    if (Math.abs(action.yMultiplier) < 1.0e-5) {
+      action.yMultiplier = 0;
+    }
+
+    // i + 1 since 0 is taken by no movement
+    actions[i + 1] = action;
   }
 
   return actions;
