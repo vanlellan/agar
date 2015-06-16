@@ -83,7 +83,7 @@ Agent.prototype.step = function step() {
 
   // Run away from entities that are larger and are within a certain distance.
   var nearestMonster = this.findNearestEntity(function(user, entity) {
-    return entity.id !== user.id && entity.size > user.size && !entity.isVirus;
+    return entity.id !== user.id && 0.9*entity.size > user.size && !entity.isVirus;
   });
 
   if (nearestMonster) {
@@ -98,8 +98,27 @@ Agent.prototype.step = function step() {
     }
   }
 
+  //Avoid eating Viruses
+  var nearestVirus = this.findNearestEntity(function(user, entity) {
+    return entity.id !== user.id && entity.size > user.size && entity.isVirus;
+  });
+
+  if (nearestVirus) {
+    var virusDistance = distance(user, nearestVirus);
+    // Keep at edge of virus
+    if (virusDistance < user.size + nearestVirus.size) {
+      // Move away
+      var xDelta = user.x - nearestVirus.x;
+      var yDelta = user.y - nearestVirus.y
+      this.controller.move(user.x + xDelta, user.y + yDelta);
+      return;
+    }
+  }
+
+
+  //Eat nearest edible
   var nearestEdible = this.findNearestEntity(function(user, entity) {
-    return entity.id !== user.id && entity.size < user.size && !entity.isVirus;
+    return entity.id !== user.id && entity.size < 0.9*user.size && !entity.isVirus;
   });
 
   if (nearestEdible) {
